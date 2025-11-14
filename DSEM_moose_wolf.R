@@ -31,7 +31,7 @@ fit0 = dsem( sem = sem,
 #> 2             mu_j                      2 Random
 
 #
-parameters = fit0$obj$env$parList()
+parameters = fit0$obj$env$parList() 
 parameters$delta0_j = rep( 0, ncol(data) )
 
 # Refit with delta0
