@@ -1,0 +1,52 @@
+{
+    "wolves": {
+        "data_dimension": "kwargs['npts']",
+        "optimize": 1,
+        "connections": [
+            {
+                "part": "moose-block",
+                "port": "in"
+            },
+            {
+                "part": "wolves-lag",
+                "port": "in"
+            }
+        ]
+    },
+    "moose": {
+        "data_dimension": "kwargs['npts']",
+        "optimize": 1,
+        "connections": [
+            {
+                "part": "moose-block",
+                "port": "out"
+            }
+        ]
+    },
+    "wolves-pc": {
+        "data_dimension": 1,
+        "value": "0.6",
+        "optimize": 1,
+        "constraint": "equality",
+        "connections": [
+            {
+                "part": "moose-block",
+                "port": "pc"
+            }
+        ]
+    },
+    "wolves-lagvar": {
+        "data_dimension": "kwargs['npts']-kwargs['ar']",
+        "optimize": 1,
+        "connections": [
+            {
+                "part": "moose-block",
+                "port": "crop"
+            },
+            {
+                "part": "wolves-lag",
+                "port": "out"
+            }
+        ]
+    }
+}
