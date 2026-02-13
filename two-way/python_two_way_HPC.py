@@ -122,7 +122,7 @@ import scipy.linalg
 import networkx as nx
 import pysheaf as ps
 import matplotlib.pyplot as plt
-sys.path.append('/Users/trixiesouthwood/Downloads/research/netlist-sheaf')
+sys.path.append('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/netlist-sheaf')
 import netlist_sheaf
 import numpy.random
 import numpy.polynomial
@@ -156,8 +156,8 @@ def lag_fcn(npts,ar,x):
         return np.eye(npts)
 
 # Load the sheaf structure
-parts=json.load(open('/Users/trixiesouthwood/Downloads/research/two_way_parts_copy.json'))
-nets=json.load(open('/Users/trixiesouthwood/Downloads/research/two_way_nets_copy.json'))
+parts=json.load(open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/two-way/two_way_parts_copy.json'))
+nets=json.load(open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/two-way/two_way_nets_copy.json'))
 
 
 lengths = [2, 3, 5]
@@ -201,7 +201,7 @@ for l in lengths:
                         shf = netlist_sheaf.NetlistSheaf(parts,nets,npts=npts,ar=ar,lag_fcn=lag_fcn)
                         
                         measurements = defaultdict(list)
-                        with open('/Users/trixiesouthwood/Downloads/research/log_isle_royal_data.csv') as fp:
+                        with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/log_isle_royal_data.csv') as fp:
                             reader = csv.DictReader(fp, delimiter = ',')
                             idx = 0
                             for row in reader:
@@ -227,7 +227,7 @@ for l in lengths:
                 
                         # Load in DSEM predictions
                         dsem_values = defaultdict(list)
-                        with open('/Users/trixiesouthwood/Downloads/research/wolf_moose_dsem.csv') as fp:   
+                        with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/wolf_moose_dsem.csv') as fp:   
                             reader = csv.DictReader(fp, delimiter = ',')
                             idx = 0
                             for row in reader:
@@ -270,5 +270,5 @@ for l in lengths:
                 plt.show()
 
         
-with open('consistency_radius_AR.json', 'w') as json_file:
+with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/two-way/consistency_radius_AR.json', 'w') as json_file:
     json.dump(CR_dict, json_file, indent=4)
