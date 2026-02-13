@@ -122,7 +122,7 @@ import scipy.linalg
 import networkx as nx
 import pysheaf as ps
 import matplotlib.pyplot as plt
-sys.path.append('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/netlist-sheaf')
+sys.path.append('/home/rs6133a-hpc/moose-wolves-sheaf/netlist-sheaf')
 import netlist_sheaf
 import numpy.random
 import numpy.polynomial
