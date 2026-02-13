@@ -160,7 +160,7 @@ parts=json.load(open('/Users/trixiesouthwood/Downloads/research/two_way_parts_co
 nets=json.load(open('/Users/trixiesouthwood/Downloads/research/two_way_nets_copy.json'))
 
 
-lengths = [2, 3, 5, 6, 10, 12]
+lengths = [2, 3, 5]
 CR_dict = {}
 
 for l in lengths: 
@@ -268,6 +268,7 @@ for l in lengths:
                 plt.hist(consistency_radius) 
                 plt.title(f"Consistency Radius Length {l} Overlap {o} AR {a}")
                 plt.show()
+
         
 with open('consistency_radius_AR.json', 'w') as json_file:
     json.dump(CR_dict, json_file, indent=4)
