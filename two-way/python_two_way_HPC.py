@@ -1,3 +1,16 @@
+#!/bin/bash
+
+#BSUB -J python_two_way
+#BSUB -q normal
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+/home/rs6133a-hpc/PyMod/virt/bin/python3.9 python_two_way_HPC.py
+
+
+
+
+
 import numpy as np
 import pysheaf as ps
 import scipy
@@ -160,115 +173,479 @@ parts=json.load(open('/Users/trixiesouthwood/Downloads/research/moose-wolves-she
 nets=json.load(open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/two-way/two_way_nets_copy.json'))
 
 
-lengths = [2, 3, 5]
-CR_dict = {}
+
+lengths = [2, 3, 5, 6, 10, 12]
+AR0_dict = {}
 
 for l in lengths: 
     for o in list(range(1,12)):  
         if o == l:
             break
         else: 
-            for a in list(range(1,12)):
-                if a > l:
-                    break 
+            from enum import Enum
+            
+            class CellConstraintType(Enum):
+                EQUALITY = 0
+                INEQUALITY = 1
+            
+            ps.CellConstraintType = CellConstraintType
+            
+            consistency_radius = []
+            
+            overlap = o     # how many years the sheaf overlap 
+            length = l     # how many years long is each sheaf 
+            origin_year = 1959   # year data starts 
+            final_year = 2019
+            n_sheafs = int((final_year - origin_year) / length) # number of sheafs 
+                
+            for n in range(0, n_sheafs): 
+                if n == 0:
+                    startyear = origin_year 
                 else: 
+                    startyear = origin_year + (10 * n) + overlap
+                
+                endyear = startyear + length 
+                npts = endyear - startyear + 1   # has to be endyear - startyear + 1 
+                ar = 0
+                shf = netlist_sheaf.NetlistSheaf(parts,nets,npts=npts,ar=ar,lag_fcn=lag_fcn)
+                
+                measurements = defaultdict(list)
+                with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/log_isle_royal_data.csv') as fp:
+                    reader = csv.DictReader(fp, delimiter = ',')
+                    idx = 0
+                    for row in reader:
+                        for data_name,sheaf_name in names_dict.items():
+                            if row[data_name] != 'NA':
+                                year = origin_year + idx 
+                                if year > endyear:
+                                    break 
+                                        
+                            if year >= startyear: 
+                                
+                                    datum = str(year) + "-" + sheaf_name
+                                    value = float(row[data_name])
+                    
+                                    measurements[sheaf_name].append((year,value))
+                                    
+                                    shf.AddCell(datum, ps.Cell('datum',dataDimension=1))
+                                    shf.GetCell(datum).SetDataAssignment(ps.Assignment('datum', np.array([value])))
+                                    shf.AddCoface(sheaf_name,datum,
+                                                  ps.Coface('net','datum', lambda x,i  = year - startyear: x[i] ))
+                            
+                        idx = idx + 1
+                
+                # Load in DSEM predictions
+                dsem_values = defaultdict(list)
+                with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/wolf_moose_dsem.csv') as fp:   
+                    reader = csv.DictReader(fp, delimiter = ',')
+                    idx = 0
+                    for row in reader:
+                        for data_name,sheaf_name in names_dict.items():
+                            if row[data_name] != 'NA':
+                                year = origin_year + idx 
+                                
+                                if year > endyear:
+                                    break 
+                            
+                                if year >= startyear: 
+                
+                                    datum = str(year) + "-" + sheaf_name
+                                    value = float(row[data_name])
+                    
+                                    dsem_values[sheaf_name].append((year,value))        
+                       
+                        idx = idx + 1
             
-                    from enum import Enum
-                    
-                    class CellConstraintType(Enum):
-                        EQUALITY = 0
-                        INEQUALITY = 1
-                    
-                    ps.CellConstraintType = CellConstraintType
-                    
-                    consistency_radius = []
-                    
-                    overlap = o     # how many years the sheaf overlap 
-                    length = l     # how many years long is each sheaf 
-                    origin_year = 1959   # year data starts 
-                    final_year = 2019
-                    n_sheafs = int((final_year - origin_year) / length) # number of sheafs 
-                        
-                    for n in range(0, n_sheafs): 
-                        if n == 0:
-                            startyear = origin_year 
-                        else: 
-                            startyear = origin_year + (10 * n) + overlap
-                        
-                        endyear = startyear + length 
-                        npts = endyear - startyear + 1   # has to be endyear - startyear + 1 
-                        ar = a
-                        shf = netlist_sheaf.NetlistSheaf(parts,nets,npts=npts,ar=ar,lag_fcn=lag_fcn)
-                        
-                        measurements = defaultdict(list)
-                        with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/log_isle_royal_data.csv') as fp:
-                            reader = csv.DictReader(fp, delimiter = ',')
-                            idx = 0
-                            for row in reader:
-                                for data_name,sheaf_name in names_dict.items():
-                                    if row[data_name] != 'NA':
-                                        year = origin_year + idx 
-                                        if year > endyear:
-                                            break 
-                                                
-                                    if year >= startyear: 
-                                        
-                                            datum = str(year) + "-" + sheaf_name
-                                            value = float(row[data_name])
-                            
-                                            measurements[sheaf_name].append((year,value))
-                                            
-                                            shf.AddCell(datum, ps.Cell('datum',dataDimension=1))
-                                            shf.GetCell(datum).SetDataAssignment(ps.Assignment('datum', np.array([value])))
-                                            shf.AddCoface(sheaf_name,datum,
-                                                          ps.Coface('net','datum', lambda x,i  = year - startyear: x[i] ))
-                                    
-                                idx = idx + 1
+            
+                for c in shf.GetCellIndexList():
+                    shf.MaximallyExtendCell(c)
                 
-                        # Load in DSEM predictions
-                        dsem_values = defaultdict(list)
-                        with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/wolf_moose_dsem.csv') as fp:   
-                            reader = csv.DictReader(fp, delimiter = ',')
-                            idx = 0
-                            for row in reader:
-                                for data_name,sheaf_name in names_dict.items():
-                                    if row[data_name] != 'NA':
-                                        year = origin_year + idx 
-                                        
-                                        if year > endyear:
-                                            break 
-                                    
-                                        if year >= startyear: 
-                        
-                                            datum = str(year) + "-" + sheaf_name
-                                            value = float(row[data_name])
-                            
-                                            dsem_values[sheaf_name].append((year,value))        
-                               
-                                idx = idx + 1
-                    
-                            
-                                for c in shf.GetCellIndexList():
-                                    shf.MaximallyExtendCell(c)
-                                
-                    
-                                shf.FuseAssignment()
-                                
-                                consistency_radius.append(shf.ComputeConsistencyRadius())
+    
+                shf.FuseAssignment()
                 
-                               
-                                
+                consistency_radius.append(shf.ComputeConsistencyRadius())
+                
                 years=[startyear + year for year in range(npts)]
-                
-                key = f"length{l}_overlap{o}_AR{a}"
-                
-                CR_dict[key] = consistency_radius
-        
-            
-                plt.hist(consistency_radius) 
-                plt.title(f"Consistency Radius Length {l} Overlap {o} AR {a}")
-                plt.show()
 
+        key = f"length{l}_overlap{o}_AR0"
         
-with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/two-way/consistency_radius_AR.json', 'w') as json_file:
-    json.dump(CR_dict, json_file, indent=4)
+        AR0_dict[key] = consistency_radius
+
+    
+        plt.hist(consistency_radius) 
+        plt.title(f"Consistency Radius Length {l} Overlap {o} AR 0")
+        plt.show()
+
+
+
+
+lengths = [2, 3, 5, 6, 10, 12]
+AR1_dict = {}
+
+for l in lengths: 
+    for o in list(range(1,12)):  
+        if o == l:
+            break
+        else: 
+            from enum import Enum
+            
+            class CellConstraintType(Enum):
+                EQUALITY = 0
+                INEQUALITY = 1
+            
+            ps.CellConstraintType = CellConstraintType
+            
+            consistency_radius = []
+            
+            overlap = o     # how many years the sheaf overlap 
+            length = l     # how many years long is each sheaf 
+            origin_year = 1959   # year data starts 
+            final_year = 2019
+            n_sheafs = int((final_year - origin_year) / length) # number of sheafs 
+                
+            for n in range(0, n_sheafs): 
+                if n == 0:
+                    startyear = origin_year 
+                else: 
+                    startyear = origin_year + (10 * n) + overlap
+                
+                endyear = startyear + length 
+                npts = endyear - startyear + 1   # has to be endyear - startyear + 1 
+                ar = 1
+                shf = netlist_sheaf.NetlistSheaf(parts,nets,npts=npts,ar=ar,lag_fcn=lag_fcn)
+                
+                measurements = defaultdict(list)
+                with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/log_isle_royal_data.csv') as fp:
+                    reader = csv.DictReader(fp, delimiter = ',')
+                    idx = 0
+                    for row in reader:
+                        for data_name,sheaf_name in names_dict.items():
+                            if row[data_name] != 'NA':
+                                year = origin_year + idx 
+                                if year > endyear:
+                                    break 
+                                        
+                            if year >= startyear: 
+                                
+                                    datum = str(year) + "-" + sheaf_name
+                                    value = float(row[data_name])
+                    
+                                    measurements[sheaf_name].append((year,value))
+                                    
+                                    shf.AddCell(datum, ps.Cell('datum',dataDimension=1))
+                                    shf.GetCell(datum).SetDataAssignment(ps.Assignment('datum', np.array([value])))
+                                    shf.AddCoface(sheaf_name,datum,
+                                                  ps.Coface('net','datum', lambda x,i  = year - startyear: x[i] ))
+                            
+                        idx = idx + 1
+                
+                # Load in DSEM predictions
+                dsem_values = defaultdict(list)
+                with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/wolf_moose_dsem.csv') as fp:   
+                    reader = csv.DictReader(fp, delimiter = ',')
+                    idx = 0
+                    for row in reader:
+                        for data_name,sheaf_name in names_dict.items():
+                            if row[data_name] != 'NA':
+                                year = origin_year + idx 
+                                
+                                if year > endyear:
+                                    break 
+                            
+                                if year >= startyear: 
+                
+                                    datum = str(year) + "-" + sheaf_name
+                                    value = float(row[data_name])
+                    
+                                    dsem_values[sheaf_name].append((year,value))        
+                       
+                        idx = idx + 1
+            
+            
+                for c in shf.GetCellIndexList():
+                    shf.MaximallyExtendCell(c)
+                
+    
+                shf.FuseAssignment()
+                
+                consistency_radius.append(shf.ComputeConsistencyRadius())
+                
+                years=[startyear + year for year in range(npts)]
+
+        key = f"length{l}_overlap{o}_AR1"
+        
+        AR0_dict[key] = consistency_radius
+
+    
+        plt.hist(consistency_radius) 
+        plt.title(f"Consistency Radius Length {l} Overlap {o} AR 1")
+        plt.show()
+
+
+
+
+lengths = [2, 3, 5, 6, 10, 12]
+AR2_dict = {}
+
+for l in lengths: 
+    for o in list(range(1,12)):  
+        if o == l:
+            break
+        else: 
+            from enum import Enum
+            
+            class CellConstraintType(Enum):
+                EQUALITY = 0
+                INEQUALITY = 1
+            
+            ps.CellConstraintType = CellConstraintType
+            
+            consistency_radius = []
+            
+            overlap = o     # how many years the sheaf overlap 
+            length = l     # how many years long is each sheaf 
+            origin_year = 1959   # year data starts 
+            final_year = 2019
+            n_sheafs = int((final_year - origin_year) / length) # number of sheafs 
+                
+            for n in range(0, n_sheafs): 
+                if n == 0:
+                    startyear = origin_year 
+                else: 
+                    startyear = origin_year + (10 * n) + overlap
+                
+                endyear = startyear + length 
+                npts = endyear - startyear + 1   # has to be endyear - startyear + 1 
+                ar = 2
+                shf = netlist_sheaf.NetlistSheaf(parts,nets,npts=npts,ar=ar,lag_fcn=lag_fcn)
+                
+                measurements = defaultdict(list)
+                with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/log_isle_royal_data.csv') as fp:
+                    reader = csv.DictReader(fp, delimiter = ',')
+                    idx = 0
+                    for row in reader:
+                        for data_name,sheaf_name in names_dict.items():
+                            if row[data_name] != 'NA':
+                                year = origin_year + idx 
+                                if year > endyear:
+                                    break 
+                                        
+                            if year >= startyear: 
+                                
+                                    datum = str(year) + "-" + sheaf_name
+                                    value = float(row[data_name])
+                    
+                                    measurements[sheaf_name].append((year,value))
+                                    
+                                    shf.AddCell(datum, ps.Cell('datum',dataDimension=1))
+                                    shf.GetCell(datum).SetDataAssignment(ps.Assignment('datum', np.array([value])))
+                                    shf.AddCoface(sheaf_name,datum,
+                                                  ps.Coface('net','datum', lambda x,i  = year - startyear: x[i] ))
+                            
+                        idx = idx + 1
+                
+                # Load in DSEM predictions
+                dsem_values = defaultdict(list)
+                with open('/Users/trixiesouthwood/Downloads/research/moose-wolves-sheaf/wolf_moose_dsem.csv') as fp:   
+                    reader = csv.DictReader(fp, delimiter = ',')
+                    idx = 0
+                    for row in reader:
+                        for data_name,sheaf_name in names_dict.items():
+                            if row[data_name] != 'NA':
+                                year = origin_year + idx 
+                                
+                                if year > endyear:
+                                    break 
+                            
+                                if year >= startyear: 
+                
+                                    datum = str(year) + "-" + sheaf_name
+                                    value = float(row[data_name])
+                    
+                                    dsem_values[sheaf_name].append((year,value))        
+                       
+                        idx = idx + 1
+            
+            
+                for c in shf.GetCellIndexList():
+                    shf.MaximallyExtendCell(c)
+                
+    
+                shf.FuseAssignment()
+                
+                consistency_radius.append(shf.ComputeConsistencyRadius())
+                
+                years=[startyear + year for year in range(npts)]
+
+        key = f"length{l}_overlap{o}_AR2"
+        
+        AR0_dict[key] = consistency_radius
+
+    
+        plt.hist(consistency_radius) 
+        plt.title(f"Consistency Radius Length {l} Overlap {o} AR 2")
+        plt.show()
+
+
+AR0_subsetted_lists = [[(key, value)] for key, value in AR0_dict.items()]
+
+AR0_ratios = {}
+
+for sublist in AR0_subsetted_lists:
+    key, values = sublist[0]  
+
+    under = sum(v for v in values if v <= 1.0)
+    total = sum(values)
+
+    ratio = under / total 
+    AR0_ratios[key] = ratio
+
+AR1_subsetted_lists = [[(key, value)] for key, value in AR1_dict.items()]
+
+AR1_ratios = {}
+
+for sublist in AR1_subsetted_lists:
+    key, values = sublist[0]  
+
+    under = sum(v for v in values if v <= 1.0)
+    total = sum(values)
+
+    ratio = under / total 
+    AR1_ratios[key] = ratio
+
+AR2_subsetted_lists = [[(key, value)] for key, value in AR2_dict.items()]
+
+AR2_ratios = {}
+
+for sublist in AR2_subsetted_lists:
+    key, values = sublist[0]  
+
+    under = sum(v for v in values if v <= 1.0)
+    total = sum(values)
+
+    ratio = under / total 
+    AR2_ratios[key] = ratio
+
+
+
+import re
+
+data_AR0 = []
+
+for key, ratio in AR0_ratios.items():
+    m = re.match(r"length(\d+)_overlap(\d+)", key)
+    if m:
+        length = int(m.group(1))
+        overlap = int(m.group(2))
+        data_AR0.append((length, overlap, ratio))
+
+data_AR1 = []
+
+for key, ratio in AR1_ratios.items():
+    m = re.match(r"length(\d+)_overlap(\d+)", key)
+    if m:
+        length = int(m.group(1))
+        overlap = int(m.group(2))
+        data_AR1.append((length, overlap, ratio))
+
+data_AR2 = []
+
+for key, ratio in AR2_ratios.items():
+    m = re.match(r"length(\d+)_overlap(\d+)", key)
+    if m:
+        length = int(m.group(1))
+        overlap = int(m.group(2))
+        data_AR2.append((length, overlap, ratio))
+
+
+# AR 0
+lengths_AR0 = sorted(set(d[0] for d in data_AR0))
+overlaps_AR0 = sorted(set(d[1] for d in data_AR0))
+
+length_idx_AR0 = {l: i for i, l in enumerate(lengths_AR0)}
+overlap_idx_AR0 = {o: i for i, o in enumerate(overlaps_AR0)}
+
+grid_AR0 = np.full((len(overlaps_AR0), len(lengths_AR0)), np.nan)
+
+for length_AR0, overlap_AR0, ratio_AR0 in data_AR0:
+    grid_AR0[overlap_idx_AR0[overlap_AR0], length_idx_AR0[length_AR0]] = ratio_AR0
+
+# AR 1
+lengths_AR1 = sorted(set(d[0] for d in data_AR1))
+overlaps_AR1 = sorted(set(d[1] for d in data_AR1))
+
+length_idx_AR1 = {l: i for i, l in enumerate(lengths_AR1)}
+overlap_idx_AR1 = {o: i for i, o in enumerate(overlaps_AR1)}
+
+grid_AR1 = np.full((len(overlaps_AR1), len(lengths_AR1)), np.nan)
+
+for length_AR1, overlap_AR1, ratio_AR1 in data_AR1:
+    grid_AR1[overlap_idx_AR1[overlap_AR1], length_idx_AR1[length_AR1]] = ratio_AR1
+
+# AR 2
+
+lengths_AR2 = sorted(set(d[0] for d in data_AR2))
+overlaps_AR2 = sorted(set(d[1] for d in data_AR2))
+
+length_idx_AR2 = {l: i for i, l in enumerate(lengths_AR2)}
+overlap_idx_AR2 = {o: i for i, o in enumerate(overlaps_AR2)}
+
+grid_AR2 = np.full((len(overlaps_AR2), len(lengths_AR2)), np.nan)
+
+for length_AR2, overlap_AR2, ratio_AR2 in data_AR2:
+    grid_AR2[overlap_idx_AR2[overlap_AR2], length_idx_AR2[length_AR2]] = ratio_AR2
+
+
+# plot 
+
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4)) 
+
+# AR 0 
+im_AR0 = ax1.imshow(
+    grid_AR0,
+    origin="lower",
+    aspect="auto",
+    cmap="viridis"
+)
+ax1.set_xticks(range(len(lengths_AR0)), lengths_AR0)
+ax1.set_yticks(range(len(overlaps_AR0)), overlaps_AR0)
+ax1.set_xlabel("Length")
+ax1.set_ylabel("Overlap")
+ax1.set_title("AR0")
+
+# AR 1
+
+im_AR1 = ax2.imshow(
+    grid_AR1,
+    origin="lower",
+    aspect="auto",
+    cmap="viridis"
+)
+ax2.set_xticks(range(len(lengths_AR1)), lengths_AR1)
+ax2.set_yticks(range(len(overlaps_AR1)), overlaps_AR1)
+#ax2.set_xlabel("Length")
+#ax2.set_ylabel("Overlap")
+ax2.set_title("AR1")
+
+# AR 2
+
+im_AR2 = ax3.imshow(
+    grid_AR2,
+    origin="lower",
+    aspect="auto",
+    cmap="viridis"
+)
+ax3.set_xticks(range(len(lengths_AR2)), lengths_AR2)
+ax3.set_yticks(range(len(overlaps_AR2)), overlaps_AR2)
+#ax3.set_xlabel("Length")
+#ax3.set_ylabel("Overlap")
+ax3.set_title("AR2")
+
+fig.colorbar(im_AR0, ax=ax1, label="Ratio")
+fig.colorbar(im_AR1, ax=ax2, label="Ratio")
+fig.colorbar(im_AR2, ax=ax3, label="Ratio")
+
+fig.suptitle("Pixel plot of consistency radius ratios (<1 / total)")
+
+
+plt.savefig("AR_plot.pdf")
