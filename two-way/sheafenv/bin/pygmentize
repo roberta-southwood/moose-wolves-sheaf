@@ -1,0 +1,6 @@
+#!/home/rs6133a-hpc/moose-wolves-sheaf/two-way/sheafenv/bin/python
+import sys
+from pygments.cmdline import main
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(main())

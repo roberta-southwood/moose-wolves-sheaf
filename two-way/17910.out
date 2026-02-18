@@ -1,0 +1,92 @@
+Sender: LSF System <lsfadmin@node06.hs.cluster>
+Subject: Job 17910: <python_two_way> in cluster <AUHPCGen3> Exited
+
+Job <python_two_way> was submitted from host <login01.hs.cluster> by user <rs6133a-hpc> in cluster <AUHPCGen3> at Wed Feb 18 17:13:34 2026
+Job was executed on host(s) <node06.hs.cluster>, in queue <normal>, as user <rs6133a-hpc> in cluster <AUHPCGen3> at Wed Feb 18 17:13:35 2026
+</home/rs6133a-hpc> was used as the home directory.
+</home/rs6133a-hpc/moose-wolves-sheaf/two-way> was used as the working directory.
+Started at Wed Feb 18 17:13:35 2026
+Terminated at Wed Feb 18 17:13:36 2026
+Results reported at Wed Feb 18 17:13:36 2026
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+
+#BSUB -J python_two_way
+#BSUB -q normal
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+/home/rs6133a-hpc/PyMod/virt/bin/python3.9 python_two_way_HPC.py
+
+
+
+
+
+import numpy as np
+import pysheaf as ps
+import scipy
+import scipy.linalg
+import matplotlib.pyplot as plt
+import math
+
+class NetlistSheaf(ps.Sheaf):
+    def __init__(self, parts, nets, **kwargs):
+        '''
+Construct a netlist sheaf using a dictionary of `parts` and `nets`.  
+Additional optional arguments accepted as `**kwargs`, so that these can be used as parameters as the sheaf is being built.  
+
+> [!CAUTION]
+> This function uses `eval()` to unpack and build Python expressions from strings.  You have been warned; sanitize your input!
+
+Each part is named, and has fields:
+* `data_dimension`, 
+* `bounds` (optional), 
+* `ports`.
+
+The `ports` field is a dictionary naming each port, and associating a string that defines a function for the corresponding restriction map.  
+
+Example:
+```
+{ "AND2" : { "data_dimension" : 2,
+	     "bounds" : "[(0,1)]*2",
+	     "ports" : { "IN1" : "lambda x: x[0]",
+		       "IN2" : "lambda x: x[1]",
+		       "OUT" : "lambda x: x[0]*x[1]" }},
+...}
+```
+
+Each net is named, and has fields:
+* `data_dimension`,
+* `bounds` (optional),
+* `value` (optional; NB: parsed with `eval()`),
+
+(... more ...)
+------------------------------------------------------------
+
+Exited with exit code 126.
+
+Resource usage summary:
+
+    CPU time :                                   0.04 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   7 sec.
+    Turnaround time :                            2 sec.
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file <17910.err> for stderr output of this job.
+

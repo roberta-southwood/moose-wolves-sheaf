@@ -1,0 +1,123 @@
+Sender: LSF System <lsfadmin@node04.hs.cluster>
+Subject: Job 17820: <python python_two_way_HPC.py> in cluster <AUHPCGen3> Exited
+
+Job <python python_two_way_HPC.py> was submitted from host <login01.hs.cluster> by user <rs6133a-hpc> in cluster <AUHPCGen3> at Fri Feb 13 13:04:44 2026
+Job was executed on host(s) <node04.hs.cluster>, in queue <short>, as user <rs6133a-hpc> in cluster <AUHPCGen3> at Fri Feb 13 13:04:44 2026
+</home/rs6133a-hpc> was used as the home directory.
+</home/rs6133a-hpc/moose-wolves-sheaf/two-way> was used as the working directory.
+Started at Fri Feb 13 13:04:44 2026
+Terminated at Fri Feb 13 13:04:44 2026
+Results reported at Fri Feb 13 13:04:44 2026
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+python python_two_way_HPC.py
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   0.04 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   3 sec.
+    Turnaround time :                            0 sec.
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file <error.txt> for stderr output of this job.
+
+Sender: LSF System <lsfadmin@node06.hs.cluster>
+Subject: Job 17821: <python python_two_way_HPC.py> in cluster <AUHPCGen3> Exited
+
+Job <python python_two_way_HPC.py> was submitted from host <login01.hs.cluster> by user <rs6133a-hpc> in cluster <AUHPCGen3> at Fri Feb 13 13:04:56 2026
+Job was executed on host(s) <node06.hs.cluster>, in queue <short>, as user <rs6133a-hpc> in cluster <AUHPCGen3> at Fri Feb 13 13:04:56 2026
+</home/rs6133a-hpc> was used as the home directory.
+</home/rs6133a-hpc/moose-wolves-sheaf/two-way> was used as the working directory.
+Started at Fri Feb 13 13:04:56 2026
+Terminated at Fri Feb 13 13:04:56 2026
+Results reported at Fri Feb 13 13:04:56 2026
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+python python_two_way_HPC.py
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   0.05 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   2 sec.
+    Turnaround time :                            0 sec.
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file <error.txt> for stderr output of this job.
+
+Sender: LSF System <lsfadmin@node06.hs.cluster>
+Subject: Job 17822: <python python_two_way_HPC.py> in cluster <AUHPCGen3> Exited
+
+Job <python python_two_way_HPC.py> was submitted from host <login01.hs.cluster> by user <rs6133a-hpc> in cluster <AUHPCGen3> at Fri Feb 13 13:04:58 2026
+Job was executed on host(s) <node06.hs.cluster>, in queue <short>, as user <rs6133a-hpc> in cluster <AUHPCGen3> at Fri Feb 13 13:04:59 2026
+</home/rs6133a-hpc> was used as the home directory.
+</home/rs6133a-hpc/moose-wolves-sheaf/two-way> was used as the working directory.
+Started at Fri Feb 13 13:04:59 2026
+Terminated at Fri Feb 13 13:04:59 2026
+Results reported at Fri Feb 13 13:04:59 2026
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+python python_two_way_HPC.py
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   0.04 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   3 sec.
+    Turnaround time :                            1 sec.
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file <error.txt> for stderr output of this job.
+
