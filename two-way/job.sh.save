@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#BSUB -J python_two_way
+#BSUB -q normal
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+source /home/rs6133a-hpc/moose-wolves-sheaf/two-way/virt/bin/python3 python_two_way_HPC.py
+
+
+
+
+
+
+
