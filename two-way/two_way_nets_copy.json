@@ -4,16 +4,16 @@
         "optimize": 1,
         "connections": [
             {
+                "part": "moose-block",
+                "port": "out"
+            },
+            {
                 "part": "wolves-block",
                 "port": "in"
             },
             {
                 "part": "moose-lag",
                 "port": "in"
-            },
-            {
-                "part": "moose-block",
-                "port": "out"
             }
         ]
     },
