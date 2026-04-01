@@ -2,7 +2,7 @@
 
 Github is currently being editted and cleaned for replication and clairity. 
 
-This code tests mathematical sheaf modeling on the wolf and moose population predator and prey dynamic in Isle Royale, Michigan. Data is from the contiguous collection years of 1959 to 2019.
+This code tests mathematical sheaf modeling on the wolf and moose population predator and prey dynamic in Isle Royale, Michigan. Data is from the contiguous collection years of 1959 to 2019. The original data file is provided as well as the logged data file which is needed for the models. 
 
 My most recent poster presentation about this research can be found under "Southwood_StatConnect_Poster".  
 
